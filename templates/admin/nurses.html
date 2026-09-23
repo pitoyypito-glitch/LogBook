@@ -1,0 +1,379 @@
+{% extends "base.html" %} {% block title %}Kelola Perawat{% endblock %} {% block
+content %}
+<div class="page-header">
+  <span class="eyebrow">ADMINISTRATION</span>
+  <h1>Kelola Perawat</h1>
+  <p class="text-muted">
+    Tambah, edit, aktifkan/nonaktifkan, dan hapus data perawat. Perawat yang
+    mendaftar mandiri lewat halaman registrasi langsung aktif dan bisa langsung
+    login.
+  </p>
+</div>
+
+{% if perlu_perhatian and (perlu_perhatian.expired or perlu_perhatian.critical
+or perlu_perhatian.warning) %}
+<div class="card reveal">
+  <div class="card-header">
+    <div>
+      <span class="eyebrow">PERINGATAN</span>
+      <h2>Masa Berlaku SIP / SPK-RKK</h2>
+    </div>
+  </div>
+  {% if perlu_perhatian.expired %}
+  <div class="status-banner danger">
+    <div>
+      <strong
+        >{{ perlu_perhatian.expired|length }} AKUN SUDAH KEDALUWARSA</strong
+      ><small
+        >{{ perlu_perhatian.expired|map(attribute='nama')|join(', ') }} akan
+        dinonaktifkan otomatis oleh sistem sampai tanggal diperbarui.</small
+      >
+    </div>
+  </div>
+  {% endif %} {% if perlu_perhatian.critical %}
+  <div class="status-banner danger">
+    <div>
+      <strong
+        >{{ perlu_perhatian.critical|length }} AKUN KEDALUWARSA DALAM ≤30
+        HARI</strong
+      ><small
+        >{{ perlu_perhatian.critical|map(attribute='nama')|join(', ') }} segera
+        proses perpanjangan.</small
+      >
+    </div>
+  </div>
+  {% endif %} {% if perlu_perhatian.warning %}
+  <div class="status-banner warning">
+    <div>
+      <strong
+        >{{ perlu_perhatian.warning|length }} akun kedaluwarsa dalam ≤90
+        hari</strong
+      ><small
+        >{{ perlu_perhatian.warning|map(attribute='nama')|join(', ') }} mulai
+        ajukan perpanjangan.</small
+      >
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+
+<div class="card reveal">
+  <div class="card-header">
+    <div>
+      <span class="eyebrow">PENGAJUAN</span>
+      <h2>Permintaan Lupa Password</h2>
+    </div>
+    <span class="badge badge-info">{{ reset_requests|length }} menunggu</span>
+  </div>
+  {% if not reset_requests %}
+  <div class="empty-state">
+    <div class="empty-icon"></div>
+    <p>Tidak ada pengajuan lupa password yang menunggu.</p>
+  </div>
+  {% else %}
+  <div class="table-wrapper">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>NIK</th>
+          <th>Nama</th>
+          <th>Keterangan</th>
+          <th>Diajukan</th>
+          <th>Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in reset_requests %}
+        <tr>
+          <td><strong>{{ r.user.username }}</strong></td>
+          <td>{{ r.user.nurse.nama if r.user.nurse else '-' }}</td>
+          <td>{{ r.alasan or '-' }}</td>
+          <td>
+            {{ r.submitted_at.strftime('%d-%m-%Y %H:%M') if r.submitted_at else
+            '-' }}
+          </td>
+          <td>
+            <div class="action-group">
+              <form
+                method="POST"
+                action="{{ url_for('admin.setujui_lupa_password', request_id=r.id) }}"
+                class="inline-form"
+              >
+                <input
+                  type="hidden"
+                  name="csrf_token"
+                  value="{{ csrf_token() }}"
+                />
+                <input
+                  type="password"
+                  name="new_password"
+                  placeholder="Password baru (min 8 karakter)"
+                  minlength="8"
+                  required
+                  class="input-sm"
+                />
+                <button type="submit" class="btn btn-sm btn-success">
+                  Tetapkan Password
+                </button>
+              </form>
+              <form
+                method="POST"
+                action="{{ url_for('admin.tolak_lupa_password', request_id=r.id) }}"
+              >
+                <input
+                  type="hidden"
+                  name="csrf_token"
+                  value="{{ csrf_token() }}"
+                />
+                <button type="submit" class="btn btn-sm btn-danger">
+                  Tolak
+                </button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+</div>
+
+<div class="card reveal">
+  <div class="card-header">
+    <div>
+      <span class="eyebrow">AKUN BARU</span>
+      <h2>Tambah Akun Perawat</h2>
+    </div>
+  </div>
+  <form method="POST" action="{{ url_for('admin.tambah_perawat') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+    <div class="grid-2">
+      <div class="form-group">
+        <label>NIK</label
+        ><input
+          type="text"
+          name="nik"
+          inputmode="numeric"
+          pattern="[0-9]{1,8}"
+          maxlength="8"
+          title="NIK maksimal 8 digit angka"
+          required
+        />
+      </div>
+      <div class="form-group">
+        <label>Nama Lengkap</label><input type="text" name="nama" required />
+      </div>
+      <div class="form-group">
+        <label>Level Awal</label
+        ><select name="current_level_id">
+          <option value="">- Pilih Level -</option>
+          {% for lvl in levels %}
+          <option value="{{ lvl.id }}">{{ lvl.nama_level }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Departemen</label
+        ><select name="department_id">
+          <option value="">- Pilih Departemen -</option>
+          {% for dept in departments %}
+          <option value="{{ dept.id }}">{{ dept.nama_departemen }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>STR</label><input type="text" name="str" />
+      </div>
+      <div class="form-group">
+        <label>SIP</label><input type="text" name="sip" />
+      </div>
+      <div class="form-group">
+        <label>SIP Berlaku Sampai <small>(SIP berlaku 5 tahun)</small></label
+        ><input type="date" name="sip_expiry" />
+      </div>
+      <div class="form-group">
+        <label>SPK/RKK</label><input type="text" name="spk_rkk" />
+      </div>
+      <div class="form-group">
+        <label
+          >SPK/RKK Berlaku Sampai
+          <small>(SPK/RKK berlaku 3 tahun)</small></label
+        ><input type="date" name="spk_rkk_expiry" />
+      </div>
+    </div>
+    <button type="submit" class="btn btn-primary">+ Tambah Perawat</button>
+  </form>
+</div>
+
+<div class="card reveal">
+  <div class="card-header">
+    <div>
+      <span class="eyebrow">DATA PERAWAT</span>
+      <h2>Daftar Perawat</h2>
+    </div>
+    <span class="badge badge-info">{{ nurses|length }} akun</span>
+  </div>
+  {% if not nurses %}
+  <div class="empty-state">
+    <div class="empty-icon"></div>
+    <p>Belum ada data perawat.</p>
+  </div>
+  {% else %}
+  <div class="table-wrapper">
+    <table class="table nurses-table">
+      <thead>
+        <tr>
+          <th>Perawat</th>
+          <th class="col-aksi">Aksi</th>
+          <th>NIK</th>
+          <th>Level</th>
+          <th>Departemen</th>
+          <th>SIP</th>
+          <th>SPK/RKK</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for n in nurses %}
+        <tr>
+          <td>
+            <div class="nurse-cell">
+              {% if n.foto_profile %}<img
+                class="table-avatar"
+                src="{{ url_for('static', filename='uploads/' ~ n.foto_profile) }}"
+                alt=""
+              />{% else %}<span class="table-avatar avatar-fallback"
+                >{{ n.nama[:1]|upper }}</span
+              >{% endif %}
+              <div>
+                <strong>{{ n.nama }}</strong>
+              </div>
+            </div>
+          </td>
+          <td class="col-aksi">
+            <div class="row-menu">
+              <button
+                type="button"
+                class="row-menu-btn"
+                aria-haspopup="true"
+                aria-expanded="false"
+                aria-label="Menu aksi untuk {{ n.nama }}"
+              >
+                &#8942;
+              </button>
+              <div class="row-menu-dropdown" role="menu">
+                <a
+                  href="{{ url_for('admin.edit_perawat', nurse_id=n.id) }}"
+                  class="row-menu-item"
+                  role="menuitem"
+                  >Edit</a
+                >
+                <form
+                  method="POST"
+                  action="{{ url_for('admin.toggle_status', nurse_id=n.id) }}"
+                >
+                  <input
+                    type="hidden"
+                    name="csrf_token"
+                    value="{{ csrf_token() }}"
+                  />
+                  <button type="submit" class="row-menu-item" role="menuitem">
+                    {% if n.status == 'active' %}Nonaktifkan{% else %}Aktifkan{%
+                    endif %}
+                  </button>
+                </form>
+                <form
+                  method="POST"
+                  action="{{ url_for('admin.hapus_perawat', nurse_id=n.id) }}"
+                  data-confirm="Hapus data {{ n.nama|e }} beserta riwayat logbook dan pengajuan level? Tindakan ini tidak dapat dibatalkan."
+                >
+                  <input
+                    type="hidden"
+                    name="csrf_token"
+                    value="{{ csrf_token() }}"
+                  />
+                  <button
+                    type="submit"
+                    class="row-menu-item row-menu-item-danger"
+                    role="menuitem"
+                  >
+                    Hapus
+                  </button>
+                </form>
+              </div>
+            </div>
+          </td>
+          <td>{{ n.nik or '-' }}</td>
+          <td>
+            <span class="badge badge-level"
+              >{{ n.level.nama_level if n.level else '-' }}</span
+            >
+          </td>
+          <td>
+            <span class="badge badge-secondary"
+              >{{ n.department.nama_departemen if n.department else '-' }}</span
+            >
+          </td>
+          <td>
+            {% if not n.sip_expiry %}<span class="badge badge-secondary"
+              >- belum diisi -</span
+            >
+            {% elif n.sip_status.level == 'expired' %}<span
+              class="badge badge-danger"
+              >Kedaluwarsa {{ n.sip_expiry.strftime('%d-%m-%Y') }}</span
+            >
+            {% elif n.sip_status.level == 'critical' %}<span
+              class="badge badge-danger"
+              >H-{{ n.sip_status.days_left }} ({{
+              n.sip_expiry.strftime('%d-%m-%Y') }})</span
+            >
+            {% elif n.sip_status.level == 'warning' %}<span
+              class="badge badge-warning"
+              >H-{{ n.sip_status.days_left }} ({{
+              n.sip_expiry.strftime('%d-%m-%Y') }})</span
+            >
+            {% else %}<span class="badge badge-success"
+              >s.d. {{ n.sip_expiry.strftime('%d-%m-%Y') }}</span
+            >{% endif %}
+          </td>
+          <td>
+            {% if not n.spk_rkk_expiry %}<span class="badge badge-secondary"
+              >- belum diisi -</span
+            >
+            {% elif n.spk_rkk_status.level == 'expired' %}<span
+              class="badge badge-danger"
+              >Kedaluwarsa {{ n.spk_rkk_expiry.strftime('%d-%m-%Y') }}</span
+            >
+            {% elif n.spk_rkk_status.level == 'critical' %}<span
+              class="badge badge-danger"
+              >H-{{ n.spk_rkk_status.days_left }} ({{
+              n.spk_rkk_expiry.strftime('%d-%m-%Y') }})</span
+            >
+            {% elif n.spk_rkk_status.level == 'warning' %}<span
+              class="badge badge-warning"
+              >H-{{ n.spk_rkk_status.days_left }} ({{
+              n.spk_rkk_expiry.strftime('%d-%m-%Y') }})</span
+            >
+            {% else %}<span class="badge badge-success"
+              >s.d. {{ n.spk_rkk_expiry.strftime('%d-%m-%Y') }}</span
+            >{% endif %}
+          </td>
+          <td>
+            {% if n.status == 'active' %}<span
+              class="badge badge-success badge-status"
+              >● Aktif</span
+            >{% else %}<span class="badge badge-danger badge-status"
+              >● Nonaktif</span
+            >{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

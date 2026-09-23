@@ -1,0 +1,129 @@
+{% extends "base.html" %} {% block title %}Detail Keterampilan{% endblock %} {%
+block content %}
+
+<a href="{{ url_for('logbook.index') }}" class="btn btn-sm btn-secondary mb-1">
+  Kembali</a
+>
+
+<div class="card">
+  <h1>{{ task.nama_keterampilan }}</h1>
+  <p class="text-muted">Kompetensi: {{ task.competency.nama_kompetensi }}</p>
+  <p>
+    Target: <strong>{{ task.target or '-' }}{{ task.satuan or '' }}</strong>
+  </p>
+</div>
+
+<div class="card">
+  <h2>Riwayat Pencapaian</h2>
+  {% if not entries %}
+  <p>Belum ada pencapaian yang dicatat.</p>
+  {% else %}
+  <table class="table">
+    <thead>
+      <tr>
+        {% if is_reviewer %}
+        <th>Perawat</th>
+        {% endif %}
+        <th>Ke</th>
+        <th>O</th>
+        <th>SPV</th>
+        <th>M</th>
+        <th>Catatan</th>
+        <th>Status Verifikasi</th>
+        {% if is_reviewer %}
+        <th>Aksi</th>
+        {% endif %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for e in entries %}
+      <tr>
+        {% if is_reviewer %}
+        <td>{{ e.nurse.nama }}</td>
+        {% endif %}
+        <td>{{ e.percobaan_ke }}</td>
+        <td>
+          {{ 'Ya (' ~ e.tanggal_o.strftime('%d-%m-%Y') ~ ')' if e.status_o and
+          e.tanggal_o else ('Ya' if e.status_o else '-') }}
+        </td>
+        <td>
+          {{ 'Ya (' ~ e.tanggal_spv.strftime('%d-%m-%Y') ~ ')' if e.status_spv
+          and e.tanggal_spv else ('Ya' if e.status_spv else '-') }}
+        </td>
+        <td>
+          {{ 'Ya (' ~ e.tanggal_m.strftime('%d-%m-%Y') ~ ')' if e.status_m and
+          e.tanggal_m else ('Ya' if e.status_m else '-') }}
+        </td>
+        <td>{{ e.catatan or '-' }}</td>
+        <td>
+          {% if e.verification_status == 'disetujui' %}
+          <span class="badge badge-success">Disetujui</span>
+          {% elif e.verification_status == 'ditolak' %}
+          <span class="badge badge-danger">Ditolak</span>
+          {% else %}
+          <span class="badge badge-warning">Belum Diperiksa</span>
+          {% endif %}
+        </td>
+        {% if is_reviewer %}
+        <td>
+          {% if e.verification_status == 'belum_diperiksa' %}
+          <form
+            method="POST"
+            action="{{ url_for('logbook.verify_progress', progress_id=e.id) }}"
+            class="inline-form"
+          >
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input
+              type="text"
+              name="catatan"
+              placeholder="Catatan (opsional)"
+              class="input-sm"
+            />
+            <button
+              type="submit"
+              name="action"
+              value="approve"
+              class="btn btn-sm btn-success"
+            >
+              Setujui
+            </button>
+            <button
+              type="submit"
+              name="action"
+              value="reject"
+              class="btn btn-sm btn-danger"
+            >
+              Tolak
+            </button>
+          </form>
+          {% else %} - {% endif %}
+        </td>
+        {% endif %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+</div>
+
+{% if not is_reviewer %}
+<div class="card">
+  <h2>Catat Pencapaian Baru</h2>
+  <form
+    method="POST"
+    action="{{ url_for('logbook.task_detail', task_id=task.id) }}"
+  >
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="form-group-inline">
+      <label><input type="checkbox" name="status_o" /> Observasi (O)</label>
+      <label><input type="checkbox" name="status_spv" /> Supervisi (SPV)</label>
+      <label><input type="checkbox" name="status_m" /> Mandiri (M)</label>
+    </div>
+    <div class="form-group">
+      <label>Catatan (opsional)</label>
+      <input type="text" name="catatan" />
+    </div>
+    <button type="submit" class="btn btn-primary">Simpan</button>
+  </form>
+</div>
+{% endif %} {% endblock %}

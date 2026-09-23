@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Edit Perawat{% endblock %}
+{% block content %}
+<a href="{{ url_for('admin.daftar_perawat') }}" class="btn btn-sm btn-secondary mb-1">← Kembali</a>
+<div class="page-header"><span class="eyebrow">ADMINISTRATION</span><h1>Edit Data Perawat</h1><p class="text-muted">Perbarui identitas, level, foto, atau password akun.</p></div>
+<div class="card reveal">
+<form method="POST" enctype="multipart/form-data">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="edit-profile-head">
+    {% if nurse.foto_profile %}<img class="edit-avatar" src="{{ url_for('static', filename='uploads/' ~ nurse.foto_profile) }}" alt="Foto {{ nurse.nama }}">{% else %}<span class="edit-avatar avatar-fallback">{{ nurse.nama[:1]|upper }}</span>{% endif %}
+    <div><h2>{{ nurse.nama }}</h2><span class="badge badge-level badge-level-lg">{{ nurse.level.nama_level if nurse.level else 'Belum ada level' }}</span></div>
+  </div>
+  <div class="grid-2">
+    <div class="form-group"><label>NIK <small>(dipakai untuk login, maksimal 8 digit angka)</small></label><input type="text" name="nik" value="{{ nurse.nik or '' }}" inputmode="numeric" pattern="[0-9]{1,8}" maxlength="8" title="NIK maksimal 8 digit angka" required></div>
+    <div class="form-group"><label>Password Baru <small>(kosongkan jika tidak diubah, default akun baru: Eka123!)</small></label><div class="password-field"><input type="password" name="password" minlength="8"><button type="button" class="toggle-password" aria-label="Tampilkan password"><svg class="icon-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg><svg class="icon-eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a21.86 21.86 0 0 1 5.06-5.94M9.9 4.24A10.4 10.4 0 0 1 12 4c7 0 11 7 11 7a21.86 21.86 0 0 1-3.22 4.36M14.12 14.12a3 3 0 1 1-4.24-4.24"/><path d="M1 1l22 22"/></svg></button></div></div>
+    <div class="form-group"><label>Nama Lengkap</label><input type="text" name="nama" value="{{ nurse.nama }}" required></div>
+    <div class="form-group"><label>Level</label><select name="current_level_id"><option value="">- Belum ada level -</option>{% for lvl in levels %}<option value="{{ lvl.id }}" {% if nurse.current_level_id == lvl.id %}selected{% endif %}>{{ lvl.nama_level }}</option>{% endfor %}</select></div>
+    <div class="form-group"><label>Departemen</label><select name="department_id"><option value="">- Belum ada departemen -</option>{% for dept in departments %}<option value="{{ dept.id }}" {% if nurse.department_id == dept.id %}selected{% endif %}>{{ dept.nama_departemen }}</option>{% endfor %}</select></div>
+    <div class="form-group"><label>STR</label><input type="text" name="str" value="{{ nurse.str_ or '' }}"></div>
+    <div class="form-group"><label>SIP</label><input type="text" name="sip" value="{{ nurse.sip or '' }}"></div>
+    <div class="form-group">
+      <label>SIP Berlaku Sampai <small>(SIP berlaku 5 tahun)</small></label>
+      <input type="date" name="sip_expiry" value="{{ nurse.sip_expiry.strftime('%Y-%m-%d') if nurse.sip_expiry else '' }}">
+      {% if nurse.sip_status %}
+        {% if nurse.sip_status.level == 'expired' %}<small class="text-danger">Sudah kedaluwarsa sejak {{ nurse.sip_expiry.strftime('%d-%m-%Y') }}.</small>
+        {% elif nurse.sip_status.level in ('critical', 'warning') %}<small class="text-danger">Sisa {{ nurse.sip_status.days_left }} hari lagi.</small>{% endif %}
+      {% endif %}
+    </div>
+    <div class="form-group"><label>SPK/RKK</label><input type="text" name="spk_rkk" value="{{ nurse.spk_rkk or '' }}"></div>
+    <div class="form-group">
+      <label>SPK/RKK Berlaku Sampai <small>(SPK/RKK berlaku 3 tahun)</small></label>
+      <input type="date" name="spk_rkk_expiry" value="{{ nurse.spk_rkk_expiry.strftime('%Y-%m-%d') if nurse.spk_rkk_expiry else '' }}">
+      {% if nurse.spk_rkk_status %}
+        {% if nurse.spk_rkk_status.level == 'expired' %}<small class="text-danger">Sudah kedaluwarsa sejak {{ nurse.spk_rkk_expiry.strftime('%d-%m-%Y') }}.</small>
+        {% elif nurse.spk_rkk_status.level in ('critical', 'warning') %}<small class="text-danger">Sisa {{ nurse.spk_rkk_status.days_left }} hari lagi.</small>{% endif %}
+      {% endif %}
+    </div>
+    <div class="form-group full"><label>Ganti Foto Profil</label><input type="file" name="foto_profile" accept="image/png,image/jpeg,image/webp"><small>PNG, JPG, JPEG, WEBP • maksimal 5 MB</small></div>
+  </div>
+  <div class="edit-actions"><button type="submit" class="btn btn-primary">Simpan Perubahan</button><a href="{{ url_for('admin.daftar_perawat') }}" class="btn btn-secondary">Batal</a></div>
+</form>
+</div>
+{% endblock %}

@@ -1,0 +1,54 @@
+{% extends "base.html" %} {% block title %}Log Aktivitas Admin{% endblock %} {%
+block content %} {% set aksi_label = { "tambah_perawat": ("Tambah Perawat",
+"badge-success"), "edit_perawat": ("Edit Perawat", "badge-info"),
+"aktifkan_perawat": ("Aktifkan Perawat", "badge-success"),
+"nonaktifkan_perawat": ("Nonaktifkan Perawat", "badge-warning"),
+"hapus_perawat": ("Hapus Perawat", "badge-danger"), "ubah_level_manual": ("Ubah
+Level (Manual)", "badge-info"), "setujui_lupa_password": ("Setujui Lupa
+Password", "badge-info"), "tolak_lupa_password": ("Tolak Lupa Password",
+"badge-danger") } %}
+
+<h1>Log Aktivitas Admin</h1>
+<p>
+  Mencatat setiap tindakan administrasi dalam sistem sebagai riwayat perubahan
+  yang dapat ditelusuri.
+</p>
+
+<div class="card">
+  {% if not logs %}
+  <p>Belum ada aktivitas yang tercatat.</p>
+  {% else %}
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Waktu</th>
+        <th>Admin</th>
+        <th>Aksi</th>
+        <th>Target</th>
+        <th>Keterangan</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for log in logs %} {% set label_info = aksi_label.get(log.aksi) %}
+      <tr>
+        <td>
+          {{ log.created_at.strftime('%d-%m-%Y %H:%M') if log.created_at else
+          '-' }}
+        </td>
+        <td>{{ log.admin_username }}</td>
+        <td>
+          {% if label_info %}<span class="badge {{ label_info[1] }}"
+            >{{ label_info[0] }}</span
+          >{% else %}<span class="badge badge-secondary">{{ log.aksi }}</span
+          >{% endif %}
+        </td>
+        <td>{{ log.target_label or '-' }}</td>
+        <td>{{ log.keterangan or '-' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+</div>
+
+{% endblock %}

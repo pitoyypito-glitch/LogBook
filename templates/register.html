@@ -1,0 +1,129 @@
+{% extends "base.html" %} {% block title %} Daftar Akun {% endblock %} {%
+block public_content %}
+
+<div class="auth-wrapper">
+  <div class="card auth-card auth-card-wide reveal">
+    <img
+      class="auth-logo"
+      src="{{ url_for('static', filename='img/logo.png') }}"
+      alt="Eka Hospital"
+    />
+
+    <h1 class="card-title">Daftar Akun Perawat</h1>
+
+    <p class="card-subtitle">
+      Lengkapi data di bawah ini dengan benar dan sesuai dokumen yang berlaku. Setelah proses pendaftaran berhasil, akun Anda akan langsung aktif
+    </p>
+
+    <form method="POST" action="{{ url_for('auth.register') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="nama">Nama Lengkap</label>
+          <input
+            type="text"
+            id="nama"
+            name="nama"
+            value="{{ form_values.nama or '' }}"
+            required
+            autofocus
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="nik">NIK</label>
+          <input
+            type="text"
+            id="nik"
+            name="nik"
+            value="{{ form_values.nik or '' }}"
+            inputmode="numeric"
+            pattern="[0-9]{1,8}"
+            maxlength="8"
+            title="NIK maksimal 8 digit angka"
+            required
+          />
+          <small>NIK ini akan menjadi identitas login Anda (maksimal 8 digit angka).</small>
+        </div>
+
+        <div class="form-group">
+          <label for="sip">SIP</label>
+          <input
+            type="text"
+            id="sip"
+            name="sip"
+            value="{{ form_values.sip or '' }}"
+            required
+          />
+        </div>
+
+        <div class="form-group full">
+          <label for="spk_rkk">SPK/RKK</label>
+          <input
+            type="text"
+            id="spk_rkk"
+            name="spk_rkk"
+            value="{{ form_values.spk_rkk or '' }}"
+            required
+          />
+        </div>
+
+        <div class="form-group full">
+          <label for="current_level_id">Level</label>
+          <select id="current_level_id" name="current_level_id" required>
+            <option value="">- Pilih Level -</option>
+            {% for lvl in levels %}
+            <option
+              value="{{ lvl.id }}"
+              {%
+              if
+              form_values.current_level_id
+              ==
+              lvl.id
+              %}selected{%
+              endif
+              %}
+            >
+              {{ lvl.nama_level }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group full">
+          <label for="department_id">Departemen</label>
+          <select id="department_id" name="department_id" required>
+            <option value="">- Pilih Departemen -</option>
+            {% for dept in departments %}
+            <option
+              value="{{ dept.id }}"
+              {%
+              if
+              form_values.department_id
+              ==
+              dept.id
+              %}selected{%
+              endif
+              %}
+            >
+              {{ dept.nama_departemen }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-block">
+        Daftar
+      </button>
+    </form>
+
+    <div class="auth-links">
+      <a href="{{ url_for('auth.login') }}">Sudah punya akun? Login</a>
+      <span>•</span>
+      <a href="{{ url_for('auth.forgot_password') }}">Lupa password?</a>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

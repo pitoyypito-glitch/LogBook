@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Riwayat Pengajuan Level{% endblock %}
+{% block content %}
+
+<h1>Riwayat Pengajuan Kenaikan Level</h1>
+
+<div class="card">
+    {% if not requests %}
+        <p>Belum ada riwayat pengajuan.</p>
+    {% else %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Perawat</th>
+                    <th>Dari</th>
+                    <th>Ke</th>
+                    <th>Status</th>
+                    <th>Diajukan</th>
+                    <th>Direview Oleh</th>
+                    <th>Catatan</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for r in requests %}
+                <tr>
+                    <td>{{ r.nurse.nama }}</td>
+                    <td>{{ r.from_level.nama_level }}</td>
+                    <td>{{ r.to_level.nama_level }}</td>
+                    <td>
+                        {% if r.status == 'approved' %}<span class="badge badge-success">Disetujui</span>
+                        {% elif r.status == 'rejected' %}<span class="badge badge-danger">Ditolak</span>
+                        {% else %}<span class="badge badge-warning">Menunggu</span>{% endif %}
+                    </td>
+                    <td>{{ r.submitted_at.strftime('%d-%m-%Y') if r.submitted_at else '-' }}</td>
+                    <td>{{ r.reviewer.username if r.reviewer else '-' }}</td>
+                    <td>{{ r.catatan or '-' }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+</div>
+
+{% endblock %}

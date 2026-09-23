@@ -1,0 +1,25 @@
+[Unit]
+Description=Eka Hospital Logbook (Gunicorn)
+After=network.target mysql.service
+
+[Service]
+# Sesuaikan user/group & path dengan server produksi.
+User=www-data
+Group=www-data
+WorkingDirectory=/opt/eka-hospital-logbook
+EnvironmentFile=/opt/eka-hospital-logbook/.env
+# 3 worker cukup untuk ~500 user internal. KARENA >1 worker, WAJIB set
+# ENABLE_SCHEDULER=0 di .env supaya job harian tidak terpanggil dobel per
+# worker, lalu jadwalkan `flask cek-kedaluwarsa` lewat cron terpisah
+# (lihat README_DEPLOY.md).
+ExecStart=/opt/eka-hospital-logbook/venv/bin/gunicorn \
+    --workers 3 \
+    --threads 2 \
+    --timeout 60 \
+    --bind 127.0.0.1:8000 \
+    app:app
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

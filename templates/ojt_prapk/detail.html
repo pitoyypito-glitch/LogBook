@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}Logbook {{ enrollment.jenis }} - {{ enrollment.unit.nama_unit }}{% endblock %}
+{% block content %}
+
+<div class="page-header">
+    <span class="eyebrow">{{ enrollment.jenis }} &middot; {{ enrollment.unit.nama_unit }}</span>
+    <h1>{{ enrollment.nurse.nama }}
+        <span class="badge badge-status {{ 'badge-success' if enrollment.status == 'selesai' else ('badge-danger' if enrollment.status == 'dibatalkan' else 'badge-info') }}">{{ enrollment.status|capitalize }}</span>
+    </h1>
+    <p class="text-muted">Pembimbing: {{ enrollment.pembimbing.username if enrollment.pembimbing else '-' }} &middot; Mulai {{ enrollment.tanggal_mulai.strftime('%d-%m-%Y') if enrollment.tanggal_mulai else '-' }}</p>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <div><span class="eyebrow">CAPAIAN KESELURUHAN</span><h2>{{ total_selesai }} / {{ total_items }} materi selesai</h2></div>
+        <span class="badge badge-info">{{ persen }}%</span>
+    </div>
+    <div class="progress-track"><div class="progress-bar" style="width:{{ persen }}%"></div></div>
+
+    {% if current_user.role == 'admin' and enrollment.status == 'berjalan' %}
+    <form method="post" action="{{ url_for('ojt_prapk.update_status', enrollment_id=enrollment.id) }}" class="inline-form mt-1">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" name="status" value="selesai" class="btn btn-sm btn-success">Tandai Selesai</button>
+        <button type="submit" name="status" value="dibatalkan" class="btn btn-sm btn-danger">Batalkan Program</button>
+    </form>
+    {% endif %}
+</div>
+
+{% for cat in categories %}
+    <div class="card reveal mt-1">
+        <div class="card-header">
+            <div><span class="eyebrow">KATEGORI {{ cat.kode_kategori }}</span><h2>{{ cat.nama_kategori }}</h2></div>
+            <span class="badge badge-secondary">{{ cat.items|length }} materi</span>
+        </div>
+        <div class="table-wrapper">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Materi Orientasi</th>
+                        <th>Target</th>
+                        <th>Paraf Pembimbing</th>
+                        {% if can_input %}<th></th>{% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                {% for item in cat.items %}
+                    {% set entries = progress_map.get(item.id, []) %}
+                    {% set target = item.target or 1 %}
+                    <tr>
+                        <td>{{ item.nomor }}</td>
+                        <td>{{ item.nama_materi }}</td>
+                        <td>{{ target }}x</td>
+                        <td>
+                            {{ entries|length }}/{{ target }}
+                            {% if entries|length >= target %}
+                                <span class="badge badge-success">Selesai</span>
+                            {% endif %}
+                            {% if entries %}
+                                <div class="mt-1">
+                                {% for entry in entries %}
+                                    <div class="text-muted" style="font-size:.72rem">
+                                        #{{ entry.percobaan_ke }} &middot; {{ entry.tanggal.strftime('%d-%m-%Y') }}
+                                        &middot; {{ entry.pembimbing.username if entry.pembimbing else '-' }}
+                                        {% if can_input %}
+                                        <form method="post" action="{{ url_for('ojt_prapk.delete_progress', enrollment_id=enrollment.id, progress_id=entry.id) }}" style="display:inline" data-confirm="Batalkan paraf ini?">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                            <button type="submit" class="btn btn-sm btn-outline" style="padding:2px 7px;font-size:.65rem">Batal</button>
+                                        </form>
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                                </div>
+                            {% endif %}
+                        </td>
+                        {% if can_input %}
+                        <td>
+                            {% if entries|length < target and enrollment.status == 'berjalan' %}
+                            <form method="post" action="{{ url_for('ojt_prapk.add_progress', enrollment_id=enrollment.id, item_id=item.id) }}" class="inline-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <input type="date" name="tanggal" class="input-sm" required value="{{ today }}">
+                                <button type="submit" class="btn btn-sm btn-primary">Paraf</button>
+                            </form>
+                            {% endif %}
+                        </td>
+                        {% endif %}
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endfor %}
+
+{% endblock %}

@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Riwayat Verifikasi Logbook{% endblock %}
+{% block content %}
+
+<h1>Riwayat Verifikasi Logbook</h1>
+
+<div class="card">
+    {% if not entries %}
+        <p>Belum ada data pencapaian logbook.</p>
+    {% else %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Perawat</th>
+                    <th>Keterampilan</th>
+                    <th>Percobaan</th>
+                    <th>Status</th>
+                    <th>Diverifikasi Oleh</th>
+                    <th>Tanggal Dicatat</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for e in entries %}
+                <tr>
+                    <td>{{ e.nurse.nama }}</td>
+                    <td>{{ e.task.nama_keterampilan }}</td>
+                    <td>{{ e.percobaan_ke }}</td>
+                    <td>
+                        {% if e.verification_status == 'disetujui' %}<span class="badge badge-success">Disetujui</span>
+                        {% elif e.verification_status == 'ditolak' %}<span class="badge badge-danger">Ditolak</span>
+                        {% else %}<span class="badge badge-warning">Belum Diperiksa</span>{% endif %}
+                    </td>
+                    <td>{{ e.verifier.username if e.verifier else '-' }}</td>
+                    <td>{{ e.created_at.strftime('%d-%m-%Y') if e.created_at else '-' }}</td>
+                    <td><a href="{{ url_for('logbook.task_detail', task_id=e.task_id, nurse_id=e.nurse_id) }}" class="btn btn-sm btn-secondary">Detail</a></td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+</div>
+
+{% endblock %}

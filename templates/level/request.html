@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}Kenaikan Level{% endblock %}
+{% block content %}
+
+{% if not is_reviewer %}
+    <h1>Kenaikan Level</h1>
+
+    <div class="card">
+        <p>Level saat ini: <strong>{{ nurse.level.nama_level if nurse and nurse.level else '-' }}</strong></p>
+        <p>Progress logbook: {{ selesai }} / {{ total }} keterampilan selesai</p>
+
+        {% if eligible %}
+            {% set sudah_pending = riwayat and riwayat[0].status == 'pending' %}
+            {% if sudah_pending %}
+                <p><span class="badge badge-warning">Menunggu Review</span> Pengajuan Anda sedang diproses oleh supervisor/admin.</p>
+            {% elif next_level %}
+                <p><span class="badge badge-success">Eligible</span> Anda memenuhi syarat untuk mengajukan kenaikan ke <strong>{{ next_level.nama_level }}</strong>.</p>
+                <form method="POST" action="{{ url_for('level.ajukan') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-primary">Ajukan Kenaikan ke {{ next_level.nama_level }}</button>
+                </form>
+            {% else %}
+                <p>Anda sudah berada di level tertinggi.</p>
+            {% endif %}
+        {% else %}
+            <p><span class="badge badge-secondary">Belum Eligible</span> Selesaikan seluruh logbook level saat ini terlebih dahulu.</p>
+        {% endif %}
+    </div>
+
+    <div class="card">
+        <h2>Riwayat Pengajuan</h2>
+        {% if not riwayat %}
+            <p>Belum ada riwayat pengajuan kenaikan level.</p>
+        {% else %}
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Dari</th>
+                        <th>Ke</th>
+                        <th>Status</th>
+                        <th>Diajukan</th>
+                        <th>Catatan</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for r in riwayat %}
+                    <tr>
+                        <td>{{ r.from_level.nama_level }}</td>
+                        <td>{{ r.to_level.nama_level }}</td>
+                        <td>
+                            {% if r.status == 'approved' %}<span class="badge badge-success">Disetujui</span>
+                            {% elif r.status == 'rejected' %}<span class="badge badge-danger">Ditolak</span>
+                            {% else %}<span class="badge badge-warning">Menunggu</span>{% endif %}
+                        </td>
+                        <td>{{ r.submitted_at.strftime('%d-%m-%Y') if r.submitted_at else '-' }}</td>
+                        <td>{{ r.catatan or '-' }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
+
+{% else %}
+    <h1>Review Pengajuan Kenaikan Level</h1>
+    <div class="card">
+        {% if not requests %}
+            <p>Tidak ada pengajuan yang menunggu review.</p>
+        {% else %}
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Perawat</th>
+                        <th>Dari</th>
+                        <th>Ke</th>
+                        <th>Diajukan</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for r in requests %}
+                    <tr>
+                        <td>{{ r.nurse.nama }}</td>
+                        <td>{{ r.from_level.nama_level }}</td>
+                        <td>{{ r.to_level.nama_level }}</td>
+                        <td>{{ r.submitted_at.strftime('%d-%m-%Y') if r.submitted_at else '-' }}</td>
+                        <td>
+                            <form method="POST" action="{{ url_for('level.review', request_id=r.id) }}" class="inline-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <input type="text" name="catatan" placeholder="Catatan (opsional)" class="input-sm">
+                                <button type="submit" name="action" value="approve" class="btn btn-sm btn-success">Setujui</button>
+                                <button type="submit" name="action" value="reject" class="btn btn-sm btn-danger">Tolak</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
+{% endif %}
+
+{% endblock %}

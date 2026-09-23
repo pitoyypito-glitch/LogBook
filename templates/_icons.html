@@ -1,0 +1,60 @@
+{# =========================================================
+   ICON MACROS
+   Pengganti karakter unicode (⌂ ▣ ↗ ▤ ☺ ✓ ◆ ♙ ☾ ↪ ×) di navigasi.
+   Semua pakai stroke="currentColor" supaya otomatis ikut warna
+   teks/tema yang sedang aktif, dan tampil identik di semua
+   browser/HP (tidak lagi tergantung font emoji sistem).
+   size: ukuran px (default 20)
+========================================================= #}
+
+{% macro icon_home(size=20) -%}
+<svg class="icon-svg" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9"/></svg>
+{%- endmacro %}
+
+{% macro icon_logbook(size=20) -%}
+<svg class="icon-svg" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
+{%- endmacro %}
+
+{% macro icon_level(size=20) -%}
+<svg class="icon-svg" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19h16"/><path d="M7 19V13"/><path d="M12 19V8"/><path d="M17 19V4"/></svg>
+{%- endmacro %}
+
+{% macro icon_ojt(size=20) -%}
+<svg class="icon-svg" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h6"/></svg>
+{%- endmacro %}
+
+{% macro icon_profile(size=20) -%}
+<svg class="icon-svg" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c1.2-3.6 4-5.5 7-5.5s5.8 1.9 7 5.5"/></svg>
+{%- endmacro %}
+
+{% macro icon_check(size=20) -%}
+<svg class="icon-svg" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8.5 12.3 2.4 2.4 4.6-5.4"/></svg>
+{%- endmacro %}
+
+{% macro icon_award(size=20) -%}
+<svg class="icon-svg" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8.5" r="5.5"/><path d="m8 13.5-1.5 6.5L12 17l5.5 3-1.5-6.5"/></svg>
+{%- endmacro %}
+
+{% macro icon_users(size=20) -%}
+<svg class="icon-svg" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.3"/><path d="M2.5 19c1-3.1 3.4-4.8 6.5-4.8s5.5 1.7 6.5 4.8"/><path d="M15.5 4.4c1.6.3 2.8 1.7 2.8 3.4s-1.2 3.1-2.8 3.4"/><path d="M17.8 14.3c2 .5 3.4 1.9 4.2 4.7"/></svg>
+{%- endmacro %}
+
+{% macro icon_moon(size=20) -%}
+<svg class="icon-svg" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a6.8 6.8 0 0 0 10.5 10.5Z"/></svg>
+{%- endmacro %}
+
+{% macro icon_logout(size=20) -%}
+<svg class="icon-svg" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+{%- endmacro %}
+
+{% macro icon_close(size=20) -%}
+<svg class="icon-svg" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
+{%- endmacro %}
+
+{% macro icon_clock(size=20) -%}
+<svg class="icon-svg" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>
+{%- endmacro %}
+
+{% macro icon_shield(size=20) -%}
+<svg class="icon-svg" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 19 6v6c0 5-3 7.8-7 8.5-4-.7-7-3.5-7-8.5V6Z"/><path d="m9 12 2 2 4-4.5"/></svg>
+{%- endmacro %}

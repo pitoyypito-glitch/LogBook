@@ -1,0 +1,545 @@
+{% from "_icons.html" import icon_home, icon_logbook, icon_level, icon_ojt, icon_profile, icon_check, icon_award, icon_users, icon_moon, icon_logout, icon_close %}
+<!DOCTYPE html>
+<html lang="id" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b1210" />
+    <link
+      rel="icon"
+      type="image/png"
+      href="{{ url_for('static', filename='img/favicon.png') }}"
+    />
+
+    <title>
+      {% block title %}Dashboard{% endblock %} - Eka Hospital Logbook Perawat
+      Rawat Inap
+    </title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+    />
+
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+  </head>
+
+  <body>
+    <div class="ambient ambient-one"></div>
+    <div class="ambient ambient-two"></div>
+    <canvas id="particleCanvas" aria-hidden="true"></canvas>
+    <canvas id="confettiCanvas" aria-hidden="true"></canvas>
+
+    {% if current_user.is_authenticated %}
+
+    <!-- =========================
+         AUTHENTICATED LAYOUT
+    ========================== -->
+    <div class="app-shell">
+      <!-- SIDEBAR -->
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+          <a class="brand" href="{{ url_for('nurse.dashboard') }}">
+            <img
+              class="brand-mark-img"
+              src="{{ url_for('static', filename='img/mark.png') }}"
+              alt="Eka Hospital"
+            />
+
+            <span>
+              <strong>Eka Hospital</strong>
+              <small>Logbook Perawat</small>
+            </span>
+          </a>
+
+          <button
+            class="sidebar-close"
+            id="sidebarClose"
+            type="button"
+            aria-label="Tutup menu"
+          >
+            {{ icon_close(16) }}
+          </button>
+        </div>
+
+        <!-- USER MINI PROFILE -->
+        <div class="user-mini">
+          {% if current_user.role == 'perawat' and current_user.nurse and
+          current_user.nurse.foto_profile %}
+          <img
+            class="avatar avatar-img"
+            src="{{ url_for('static', filename='uploads/' ~ current_user.nurse.foto_profile) }}"
+            alt="Foto {{ current_user.nurse.nama }}"
+          />
+          {% else %}
+          <div class="avatar">
+            {{ (current_user.nurse.nama[:1] if current_user.role == 'perawat'
+            and current_user.nurse else current_user.username[:1])|upper }}
+          </div>
+          {% endif %}
+
+          <div>
+            <strong
+              >{{ current_user.nurse.nama if current_user.role == 'perawat' and
+              current_user.nurse else current_user.username }}</strong
+            >
+            {% if current_user.role == 'perawat' %}
+            <small
+              >{{ current_user.nurse.level.nama_level if current_user.nurse and
+              current_user.nurse.level else 'Belum ada level' }} &middot; {{
+              current_user.nurse.department.nama_departemen if
+              current_user.nurse and current_user.nurse.department else 'Belum
+              ada departemen' }}</small
+            >
+            {% else %}
+            <small>{{ current_user.role|capitalize }}</small>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- SIDEBAR MENU -->
+        <nav class="sidebar-menu">
+          <div class="sidebar-section-title">Menu Utama</div>
+
+          <!-- DASHBOARD -->
+          <a href="{{ url_for('nurse.dashboard') }}" class="nav-item">
+            <span class="nav-icon">{{ icon_home() }}</span>
+            <span>Dashboard</span>
+          </a>
+
+          {% if current_user.role == 'perawat' %}
+
+          <!-- LOGBOOK PERAWAT -->
+          <a href="{{ url_for('logbook.index') }}" class="nav-item">
+            <span class="nav-icon">{{ icon_logbook() }}</span>
+            <span>Logbook</span>
+          </a>
+
+          <!-- KENAIKAN LEVEL -->
+          <a href="{{ url_for('level.index') }}" class="nav-item">
+            <span class="nav-icon">{{ icon_level() }}</span>
+            <span>Kenaikan Level</span>
+          </a>
+
+          <!-- LOGBOOK OJT & PRAPK -->
+          <a href="{{ url_for('ojt_prapk.index') }}" class="nav-item">
+            <span class="nav-icon">{{ icon_ojt() }}</span>
+            <span>Logbook OJT & PraPK</span>
+          </a>
+
+          <!-- PROFIL -->
+          <a href="{{ url_for('nurse.profil') }}" class="nav-item">
+            <span class="nav-icon">{{ icon_profile() }}</span>
+            <span>Profil</span>
+          </a>
+
+          {% else %}
+
+          <!-- VERIFIKASI LOGBOOK -->
+          <a href="{{ url_for('logbook.index') }}" class="nav-item">
+            <span class="nav-icon">{{ icon_check() }}</span>
+            <span>Verifikasi Logbook</span>
+          </a>
+
+          <!-- REVIEW LEVEL -->
+          <a href="{{ url_for('level.index') }}" class="nav-item">
+            <span class="nav-icon">{{ icon_award() }}</span>
+            <span>Review Level</span>
+          </a>
+
+          <!-- LOGBOOK OJT & PRAPK -->
+          <a href="{{ url_for('ojt_prapk.index') }}" class="nav-item">
+            <span class="nav-icon">{{ icon_ojt() }}</span>
+            <span>Logbook OJT & PraPK</span>
+          </a>
+
+          {% if current_user.role == 'admin' %}
+
+          <!-- KELOLA PERAWAT -->
+          <a href="{{ url_for('admin.daftar_perawat') }}" class="nav-item">
+            <span class="nav-icon">{{ icon_users() }}</span>
+            <span>Kelola Perawat</span>
+          </a>
+
+          <!-- LOG AKTIVITAS ADMIN -->
+          <a href="{{ url_for('admin.activity_log') }}" class="nav-item">
+            <span class="nav-icon">{{ icon_check() }}</span>
+            <span>Log Aktivitas Admin</span>
+          </a>
+
+          {% endif %} {% endif %}
+        </nav>
+
+        <!-- SIDEBAR FOOTER -->
+        <div class="sidebar-footer">
+          <!-- LOGOUT -->
+          <a href="{{ url_for('auth.logout') }}" class="logout-link">
+            <span>{{ icon_logout(18) }}</span>
+            Keluar
+          </a>
+        </div>
+      </aside>
+
+      <!-- SIDEBAR OVERLAY -->
+      <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+      <!-- MAIN CONTENT -->
+      <section class="main-content">
+        <!-- TOPBAR -->
+        <header class="topbar">
+          <div class="topbar-logo">
+            <img
+              src="{{ url_for('static', filename='img/logo.png') }}"
+              alt="Eka Hospital"
+            />
+          </div>
+
+          <div class="topbar-title">
+            <span class="eyebrow"> EKA HOSPITAL </span>
+
+            <strong>
+              {% block page_heading %} Logbook Perawat Rawat Inap {% endblock %}
+            </strong>
+          </div>
+
+          <div class="topbar-actions">
+            <!-- LIVE CLOCK -->
+            <div class="clock-widget" id="clockWidget">
+              <span class="clock-time">--:--:--</span>
+              <span class="clock-date">-</span>
+            </div>
+
+            <!-- THEME TOGGLE (desktop/tablet) -->
+            <button
+              class="icon-btn theme-toggle-btn"
+              id="themeToggle"
+              type="button"
+              title="Dark mode"
+              aria-label="Ganti tema"
+            >
+              {{ icon_moon(18) }}
+            </button>
+
+            <div class="topbar-user">
+              <span class="status-dot"></span>
+
+              <span> Online </span>
+            </div>
+
+            <!-- MOBILE QUICK MENU TOGGLE (pojok kanan atas di tampilan mobile) -->
+            <button
+              class="menu-toggle"
+              id="mobileQuickToggle"
+              type="button"
+              aria-label="Buka menu"
+              aria-haspopup="true"
+              aria-controls="mobileQuickDrawer"
+            >
+              ☰
+            </button>
+          </div>
+        </header>
+
+        <!-- PAGE CONTAINER -->
+        <main class="container">
+          <!-- FLASH MESSAGE -->
+          {% with messages = get_flashed_messages(with_categories=true) %} {% if
+          messages %}
+
+          <div class="flash-container">
+            {% for category, message in messages %}
+
+            <div class="flash flash-{{ category }}">
+              <span> {{ '✓' if category == 'success' else '!' }} </span>
+
+              <div>{{ message }}</div>
+
+              <button type="button" class="flash-close">×</button>
+            </div>
+
+            {% endfor %}
+          </div>
+
+          {% endif %} {% endwith %}
+
+          <!-- CONTENT BLOCK -->
+          {% block content %} {% endblock %}
+        </main>
+      </section>
+
+      <!-- =========================
+           LIQUID BOTTOM NAVIGATION (MOBILE ONLY)
+      ========================== -->
+      <nav class="liquid-navbar" id="liquidNavbar" aria-label="Navigasi utama">
+        <div class="liquid-navbar-inner">
+          <div class="liquid-goo-layer" aria-hidden="true">
+            <svg class="liquid-ekg" id="liquidEkg" preserveAspectRatio="none">
+              <path class="liquid-ekg-line" id="liquidEkgPath" d="" />
+            </svg>
+            <span
+              class="liquid-blob liquid-blob-main"
+              id="liquidBlobMain"
+            ></span>
+          </div>
+
+          <div class="liquid-nav-items">
+            <a
+              href="{{ url_for('nurse.dashboard') }}"
+              class="liquid-nav-item nav-item"
+            >
+              <span class="liquid-nav-icon">{{ icon_home() }}</span>
+              <span class="liquid-nav-label">Dashboard</span>
+            </a>
+
+            {% if current_user.role == 'perawat' %}
+
+            <a
+              href="{{ url_for('logbook.index') }}"
+              class="liquid-nav-item nav-item"
+            >
+              <span class="liquid-nav-icon">{{ icon_logbook() }}</span>
+              <span class="liquid-nav-label">Logbook</span>
+            </a>
+
+            <a
+              href="{{ url_for('level.index') }}"
+              class="liquid-nav-item nav-item"
+            >
+              <span class="liquid-nav-icon">{{ icon_level() }}</span>
+              <span class="liquid-nav-label">Level</span>
+            </a>
+
+            {% else %}
+
+            <a
+              href="{{ url_for('logbook.index') }}"
+              class="liquid-nav-item nav-item"
+            >
+              <span class="liquid-nav-icon">{{ icon_check() }}</span>
+              <span class="liquid-nav-label">Verifikasi</span>
+            </a>
+
+            <a
+              href="{{ url_for('level.index') }}"
+              class="liquid-nav-item nav-item"
+            >
+              <span class="liquid-nav-icon">{{ icon_award() }}</span>
+              <span class="liquid-nav-label">Level</span>
+            </a>
+
+            {% endif %}
+
+            <a
+              href="{{ url_for('ojt_prapk.index') }}"
+              class="liquid-nav-item nav-item"
+            >
+              <span class="liquid-nav-icon">{{ icon_ojt() }}</span>
+              <span class="liquid-nav-label">OJT</span>
+            </a>
+          </div>
+        </div>
+      </nav>
+
+      <!-- MOBILE QUICK DRAWER (Profil, Kelola Perawat, Ganti Tema, Keluar -
+           dibuka dari hamburger kanan atas) -->
+      <div class="mobile-quick-overlay" id="mobileQuickOverlay"></div>
+      <aside
+        class="mobile-quick-drawer"
+        id="mobileQuickDrawer"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Menu cepat"
+      >
+        <div class="mobile-quick-drawer-header">
+          <strong>Menu</strong>
+          <button
+            class="mobile-quick-drawer-close"
+            id="mobileQuickClose"
+            type="button"
+            aria-label="Tutup menu"
+          >
+            {{ icon_close(16) }}
+          </button>
+        </div>
+
+        <div class="liquid-sheet-profile">
+          {% if current_user.role == 'perawat' and current_user.nurse and
+          current_user.nurse.foto_profile %}
+          <img
+            class="avatar avatar-img"
+            src="{{ url_for('static', filename='uploads/' ~ current_user.nurse.foto_profile) }}"
+            alt="Foto {{ current_user.nurse.nama }}"
+          />
+          {% else %}
+          <div class="avatar">
+            {{ (current_user.nurse.nama[:1] if current_user.role == 'perawat'
+            and current_user.nurse else current_user.username[:1])|upper }}
+          </div>
+          {% endif %}
+
+          <div>
+            <strong
+              >{{ current_user.nurse.nama if current_user.role == 'perawat' and
+              current_user.nurse else current_user.username }}</strong
+            >
+            {% if current_user.role == 'perawat' %}
+            <small
+              >{{ current_user.nurse.level.nama_level if current_user.nurse and
+              current_user.nurse.level else 'Belum ada level' }} &middot; {{
+              current_user.nurse.department.nama_departemen if
+              current_user.nurse and current_user.nurse.department else 'Belum
+              ada departemen' }}</small
+            >
+            {% else %}
+            <small>{{ current_user.role|capitalize }}</small>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="mobile-quick-drawer-menu">
+          {% if current_user.role == 'perawat' %}
+          <a href="{{ url_for('nurse.profil') }}" class="liquid-sheet-item">
+            <span class="liquid-nav-icon">{{ icon_profile() }}</span>
+            <span>Profil</span>
+          </a>
+          {% endif %} {% if current_user.role == 'admin' %}
+          <a
+            href="{{ url_for('admin.daftar_perawat') }}"
+            class="liquid-sheet-item"
+          >
+            <span class="liquid-nav-icon">{{ icon_users() }}</span>
+            <span>Kelola Perawat</span>
+          </a>
+          {% endif %}
+
+          <button
+            type="button"
+            class="liquid-sheet-item theme-toggle-btn"
+            id="themeToggleDrawer"
+          >
+            <span class="liquid-nav-icon">{{ icon_moon() }}</span>
+            <span>Ganti Tema</span>
+          </button>
+
+          <a
+            href="{{ url_for('auth.logout') }}"
+            class="liquid-sheet-item liquid-sheet-logout"
+          >
+            <span class="liquid-nav-icon">{{ icon_logout() }}</span>
+            <span>Keluar</span>
+          </a>
+        </div>
+      </aside>
+    </div>
+
+    {% else %}
+
+    <!-- =========================
+         PUBLIC / LOGIN LAYOUT
+    ========================== -->
+
+    <main class="public-main">
+      <!-- FLASH MESSAGE -->
+      {% if request.endpoint != 'auth.login' %} {% with messages =
+      get_flashed_messages(with_categories=true) %} {% if messages %}
+
+      <div class="flash-container public-flash">
+        {% for category, message in messages %}
+
+        <div class="flash flash-{{ category }}">
+          <span> {{ '✓' if category == 'success' else '!' }} </span>
+
+          <div>{{ message }}</div>
+
+          <button type="button" class="flash-close">×</button>
+        </div>
+
+        {% endfor %}
+      </div>
+
+      {% endif %} {% endwith %} {% endif %}
+
+      <!-- PUBLIC CONTENT -->
+      {% block public_content %} {% endblock %}
+    </main>
+
+    {% endif %}
+
+    <!-- =========================
+         DETAIL MODAL
+    ========================== -->
+
+    <div class="modal-backdrop" id="detailModal" aria-hidden="true">
+      <div
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modalTitle"
+      >
+        <div class="modal-header">
+          <div>
+            <span class="eyebrow"> DETAIL LOGBOOK </span>
+
+            <h2 id="modalTitle">Detail Keterampilan</h2>
+          </div>
+
+          <button class="modal-close" type="button" data-close-modal>×</button>
+        </div>
+
+        <div class="modal-body" id="modalBody"></div>
+      </div>
+    </div>
+
+    <!-- =========================
+         CONFIRM MODAL
+         Pengganti confirm() bawaan browser (yang menampilkan
+         "localhost menyatakan...") supaya tampilannya menyatu
+         dengan desain situs.
+    ========================== -->
+
+    <div class="modal-backdrop" id="confirmModal" aria-hidden="true">
+      <div
+        class="modal modal-confirm"
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="confirmModalTitle"
+      >
+        <div class="modal-header">
+          <div>
+            <span class="eyebrow">KONFIRMASI</span>
+            <h2 id="confirmModalTitle">Konfirmasi Tindakan</h2>
+          </div>
+          <button
+            class="modal-close"
+            type="button"
+            data-confirm-cancel
+          >
+            ×
+          </button>
+        </div>
+        <div class="modal-body">
+          <p id="confirmModalMessage"></p>
+          <div class="modal-actions">
+            <button type="button" class="btn btn-outline" data-confirm-cancel>
+              Batal
+            </button>
+            <button type="button" class="btn btn-danger" id="confirmModalOk">
+              Ya, Lanjutkan
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN JAVASCRIPT -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+    <!-- PAGE SPECIFIC SCRIPTS -->
+    {% block scripts %} {% endblock %}
+  </body>
+</html>

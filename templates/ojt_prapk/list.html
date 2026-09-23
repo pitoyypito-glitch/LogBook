@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% block title %}Logbook OJT & PraPK{% endblock %}
+{% block content %}
+
+{% if not is_reviewer %}
+    <div class="page-header">
+        <span class="eyebrow">ORIENTASI &amp; PRA PERAWAT KLINIS</span>
+        <h1>Logbook OJT &amp; PraPK Saya</h1>
+        <p class="text-muted">Pantau capaian program orientasi (OJT) dan PraPK Anda per unit.</p>
+    </div>
+
+    {% if not enrollments %}
+        <div class="card">
+            <div class="empty-state">
+                <div class="empty-icon">▤</div>
+                <p>Anda belum terdaftar pada program OJT atau PraPK. Hubungi admin untuk didaftarkan.</p>
+            </div>
+        </div>
+    {% endif %}
+
+    <div class="grid-2">
+        {% for e in enrollments %}
+            <div class="card reveal">
+                <div class="card-header">
+                    <div>
+                        <span class="eyebrow">{{ e.jenis }}</span>
+                        <h2>{{ e.unit.nama_unit }}</h2>
+                    </div>
+                    <span class="badge badge-status {{ 'badge-success' if e.status == 'selesai' else ('badge-danger' if e.status == 'dibatalkan' else 'badge-info') }}">{{ e.status|capitalize }}</span>
+                </div>
+                <p class="text-muted">Pembimbing: {{ e.pembimbing.username if e.pembimbing else '-' }}</p>
+                <p class="text-muted">Mulai: {{ e.tanggal_mulai.strftime('%d-%m-%Y') if e.tanggal_mulai else '-' }}</p>
+                <a href="{{ url_for('ojt_prapk.detail', enrollment_id=e.id) }}" class="btn btn-sm btn-primary mt-1">Lihat Logbook</a>
+            </div>
+        {% endfor %}
+    </div>
+
+{% else %}
+    <div class="page-header">
+        <span class="eyebrow">ORIENTASI &amp; PRA PERAWAT KLINIS</span>
+        <h1>Logbook OJT &amp; PraPK</h1>
+        <p class="text-muted">Kelola pendaftaran dan pantau capaian seluruh perawat pada program OJT / PraPK.</p>
+    </div>
+
+    {% if current_user.role == 'admin' %}
+    <div class="card">
+        <div class="card-header">
+            <div><span class="eyebrow">PENDAFTARAN BARU</span><h2>Daftarkan Perawat ke Program</h2></div>
+        </div>
+        <form method="post" action="{{ url_for('ojt_prapk.enroll') }}" class="form-grid">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="form-group">
+                <label for="nurse_id">Perawat</label>
+                <select name="nurse_id" id="nurse_id" required>
+                    <option value="">-- Pilih perawat --</option>
+                    {% for n in nurses %}
+                        <option value="{{ n.id }}">{{ n.nama }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="unit_id">Unit</label>
+                <select name="unit_id" id="unit_id" required>
+                    <option value="">-- Pilih unit --</option>
+                    {% for u in units %}
+                        <option value="{{ u.id }}">{{ u.nama_unit }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="jenis">Jenis Program</label>
+                <select name="jenis" id="jenis" required>
+                    <option value="OJT">OJT</option>
+                    <option value="PRAPK">PraPK</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="pembimbing_id">Pembimbing</label>
+                <select name="pembimbing_id" id="pembimbing_id">
+                    <option value="">-- Belum ditentukan --</option>
+                    {% for p in pembimbing_options %}
+                        <option value="{{ p.id }}">{{ p.username }} ({{ p.role }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="tanggal_masuk_kerja">Tanggal Masuk Kerja</label>
+                <input type="date" name="tanggal_masuk_kerja" id="tanggal_masuk_kerja">
+            </div>
+            <div class="form-group">
+                <label for="tanggal_mulai">Tanggal Mulai Program</label>
+                <input type="date" name="tanggal_mulai" id="tanggal_mulai">
+            </div>
+            <div class="form-group full">
+                <button type="submit" class="btn btn-primary">Daftarkan</button>
+            </div>
+        </form>
+    </div>
+    {% endif %}
+
+    <div class="card mt-1">
+        {% if not enrollments %}
+            <p>Belum ada perawat yang terdaftar pada program OJT/PraPK.</p>
+        {% else %}
+            <div class="table-wrapper">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Perawat</th>
+                            <th>Unit</th>
+                            <th>Jenis</th>
+                            <th>Pembimbing</th>
+                            <th>Status</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for e in enrollments %}
+                        <tr>
+                            <td>{{ e.nurse.nama }}</td>
+                            <td>{{ e.unit.nama_unit }}</td>
+                            <td><span class="badge badge-info">{{ e.jenis }}</span></td>
+                            <td>{{ e.pembimbing.username if e.pembimbing else '-' }}</td>
+                            <td><span class="badge badge-status {{ 'badge-success' if e.status == 'selesai' else ('badge-danger' if e.status == 'dibatalkan' else 'badge-secondary') }}">{{ e.status|capitalize }}</span></td>
+                            <td><a href="{{ url_for('ojt_prapk.detail', enrollment_id=e.id) }}" class="btn btn-sm btn-outline">Buka</a></td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    </div>
+{% endif %}
+
+{% endblock %}

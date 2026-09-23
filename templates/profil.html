@@ -1,0 +1,317 @@
+{% extends "base.html" %} {% block title %}Profil{% endblock %} {% block
+page_heading %}Profil{% endblock %} {% block content %}
+
+<div class="page-header">
+  <span class="eyebrow">AKUN SAYA</span>
+  <h1>Profil</h1>
+  <p class="text-muted">
+    Data di bawah ini diisi saat pendaftaran dan hanya dapat diubah oleh admin.
+    Anda tetap dapat mengganti foto profil sendiri.
+  </p>
+</div>
+
+<div class="card reveal profile-card">
+  <div class="card-header">
+    <div>
+      <span class="eyebrow">FOTO PROFIL</span>
+      <h2>{{ nurse.nama }}</h2>
+    </div>
+    {% if nurse.foto_profile %}
+    <img
+      class="profile-avatar profile-avatar-img"
+      src="{{ url_for('static', filename='uploads/' ~ nurse.foto_profile) }}"
+      alt="Foto profil"
+    />
+    {% else %}
+    <span class="profile-avatar">{{ nurse.nama[:1]|upper }}</span>
+    {% endif %}
+  </div>
+  <form
+    method="POST"
+    action="{{ url_for('nurse.update_profil') }}"
+    enctype="multipart/form-data"
+  >
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="profile-photo-upload">
+      <div>
+        <strong>Foto Profil</strong>
+        <small
+          >PNG, JPG, JPEG, WEBP • maksimal 5 MB. Setelah dipilih, Anda bisa
+          mengatur posisi crop-nya.</small
+        >
+        <img
+          id="fotoPreview"
+          class="foto-preview"
+          alt="Pratinjau foto terpilih"
+          hidden
+        />
+      </div>
+      <input
+        type="file"
+        name="foto_profile"
+        id="fotoProfileInput"
+        accept="image/png,image/jpeg,image/webp"
+        required
+      />
+    </div>
+    <button type="submit" class="btn btn-primary">Unggah Foto</button>
+  </form>
+</div>
+
+<div class="card reveal">
+  <div class="card-header">
+    <div>
+      <span class="eyebrow">DATA DIRI</span>
+      <h2>Data Pendaftaran</h2>
+    </div>
+    <span class="badge badge-level"
+      >{{ nurse.level.nama_level if nurse.level else '-' }}</span
+    >
+  </div>
+  <div class="form-grid">
+    <div class="form-group">
+      <label>Nama Lengkap</label>
+      <p class="static-field">{{ nurse.nama }}</p>
+    </div>
+    <div class="form-group">
+      <label>NIK</label>
+      <p class="static-field">{{ nurse.nik or '-' }}</p>
+    </div>
+    <div class="form-group">
+      <label>SIP</label>
+      <p class="static-field">
+        {{ nurse.sip or '-' }} {% if nurse.sip_expiry %}
+        <br /><small
+          >Berlaku sampai {{ nurse.sip_expiry.strftime('%d-%m-%Y') }} {% if
+          nurse.sip_status.level == 'expired' %}<span class="badge badge-danger"
+            >Kedaluwarsa</span
+          >
+          {% elif nurse.sip_status.level == 'critical' %}<span
+            class="badge badge-danger"
+            >H-{{ nurse.sip_status.days_left }}</span
+          >
+          {% elif nurse.sip_status.level == 'warning' %}<span
+            class="badge badge-warning"
+            >H-{{ nurse.sip_status.days_left }}</span
+          >{% endif %}</small
+        >
+        {% endif %}
+      </p>
+    </div>
+    <div class="form-group">
+      <label>SPK/RKK</label>
+      <p class="static-field">
+        {{ nurse.spk_rkk or '-' }} {% if nurse.spk_rkk_expiry %}
+        <br /><small
+          >Berlaku sampai {{ nurse.spk_rkk_expiry.strftime('%d-%m-%Y') }} {% if
+          nurse.spk_rkk_status.level == 'expired' %}<span
+            class="badge badge-danger"
+            >Kedaluwarsa</span
+          >
+          {% elif nurse.spk_rkk_status.level == 'critical' %}<span
+            class="badge badge-danger"
+            >H-{{ nurse.spk_rkk_status.days_left }}</span
+          >
+          {% elif nurse.spk_rkk_status.level == 'warning' %}<span
+            class="badge badge-warning"
+            >H-{{ nurse.spk_rkk_status.days_left }}</span
+          >{% endif %}</small
+        >
+        {% endif %}
+      </p>
+    </div>
+    <div class="form-group">
+      <label>Level</label>
+      <p class="static-field">
+        {{ nurse.level.nama_level if nurse.level else '-' }}
+      </p>
+    </div>
+    <div class="form-group">
+      <label>Departemen</label>
+      <p class="static-field">
+        {{ nurse.department.nama_departemen if nurse.department else '-' }}
+      </p>
+    </div>
+  </div>
+  <p class="text-muted">
+    Ada data yang perlu diperbarui? Hubungi admin untuk melakukan perubahan.
+  </p>
+</div>
+
+<div class="card reveal password-card">
+  <div class="card-header">
+    <div>
+      <span class="eyebrow">AKUN</span>
+      <h2>Ubah Password</h2>
+      <p class="text-muted">
+        Minimal 8 karakter. Lupa password lama? Gunakan fitur Lupa Password di
+        halaman login.
+      </p>
+    </div>
+  </div>
+  <form method="POST" action="{{ url_for('auth.change_password') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="grid-2">
+      <div class="form-group">
+        <label>Password Lama</label>
+        <input
+          type="password"
+          name="old_password"
+          required
+          autocomplete="current-password"
+        />
+      </div>
+      <div class="form-group">
+        <label>Password Baru</label>
+        <input
+          type="password"
+          name="new_password"
+          minlength="8"
+          required
+          autocomplete="new-password"
+        />
+      </div>
+      <div class="form-group">
+        <label>Konfirmasi Password Baru</label>
+        <input
+          type="password"
+          name="confirm_password"
+          minlength="8"
+          required
+          autocomplete="new-password"
+        />
+      </div>
+    </div>
+    <button type="submit" class="btn btn-primary">Ubah Password</button>
+  </form>
+</div>
+
+<!-- =========================
+     MODAL CROP FOTO PROFIL
+========================== -->
+<div class="modal-backdrop" id="cropModal" aria-hidden="true">
+  <div
+    class="modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="cropModalTitle"
+  >
+    <div class="modal-header">
+      <div>
+        <span class="eyebrow">FOTO PROFIL</span>
+        <h2 id="cropModalTitle">Atur Posisi Foto</h2>
+      </div>
+      <button class="modal-close" type="button" id="cropCancelBtn">×</button>
+    </div>
+    <div class="modal-body">
+      <p class="text-muted crop-hint">
+        Geser dan perbesar/perkecil untuk menyesuaikan bagian foto yang
+        ditampilkan.
+      </p>
+      <div class="crop-container">
+        <img id="cropTarget" alt="Pratinjau foto yang akan di-crop" />
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-outline" id="cropCancelBtn2">
+          Batal
+        </button>
+        <button type="button" class="btn btn-primary" id="cropConfirmBtn">
+          Gunakan Foto Ini
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %} {% block scripts %}
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css"
+/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
+<script>
+  (() => {
+    const input = document.getElementById("fotoProfileInput");
+    const modal = document.getElementById("cropModal");
+    const cropImg = document.getElementById("cropTarget");
+    const confirmBtn = document.getElementById("cropConfirmBtn");
+    const cancelBtn = document.getElementById("cropCancelBtn");
+    const cancelBtn2 = document.getElementById("cropCancelBtn2");
+    const previewImg = document.getElementById("fotoPreview");
+    let cropper = null;
+
+    if (!input || !modal || typeof Cropper === "undefined") return;
+
+    const openModal = () => {
+      modal.classList.add("show");
+      modal.setAttribute("aria-hidden", "false");
+    };
+
+    const closeModal = () => {
+      modal.classList.remove("show");
+      modal.setAttribute("aria-hidden", "true");
+      if (cropper) {
+        cropper.destroy();
+        cropper = null;
+      }
+    };
+
+    input.addEventListener("change", () => {
+      const file = input.files && input.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        cropImg.src = e.target.result;
+        openModal();
+        cropImg.onload = () => {
+          if (cropper) cropper.destroy();
+          cropper = new Cropper(cropImg, {
+            aspectRatio: 1,
+            viewMode: 1,
+            dragMode: "move",
+            autoCropArea: 1,
+            background: false,
+            responsive: true,
+          });
+        };
+      };
+      reader.readAsDataURL(file);
+    });
+
+    confirmBtn.addEventListener("click", () => {
+      if (!cropper) return;
+      cropper.getCroppedCanvas({ width: 512, height: 512 }).toBlob(
+        (blob) => {
+          if (!blob) return;
+          const croppedFile = new File([blob], "foto-profil.jpg", {
+            type: "image/jpeg",
+          });
+          const dt = new DataTransfer();
+          dt.items.add(croppedFile);
+          input.files = dt.files;
+
+          if (previewImg) {
+            previewImg.src = URL.createObjectURL(blob);
+            previewImg.hidden = false;
+          }
+          closeModal();
+        },
+        "image/jpeg",
+        0.9
+      );
+    });
+
+    const batalkanPilihan = () => {
+      input.value = "";
+      closeModal();
+    };
+    cancelBtn.addEventListener("click", batalkanPilihan);
+    cancelBtn2.addEventListener("click", batalkanPilihan);
+
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) closeModal();
+    });
+  })();
+</script>
+{% endblock %}

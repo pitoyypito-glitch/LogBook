@@ -1,0 +1,425 @@
+{% extends "base.html" %} {% from "_icons.html" import icon_users, icon_clock,
+icon_shield %} {% block title %}Dashboard{% endblock %} {% block
+page_heading %}Dashboard{% endblock %} {% block content %} {% if
+current_user.role == 'perawat' %} {% if not nurse %}
+<section class="empty-state card reveal">
+  <div class="empty-icon"></div>
+  <h1>Profil belum lengkap</h1>
+  <p>
+    Profil perawat Anda belum tersedia. Silakan hubungi admin untuk
+    melengkapinya.
+  </p>
+</section>
+{% else %}
+<div class="hero-panel reveal">
+  <div class="hero-copy">
+    <span class="eyebrow">SELAMAT DATANG KEMBALI</span>
+    <h1><span data-typing>Halo, {{ nurse.nama }}</span></h1>
+    <p>
+      Pusat pengelolaan kompetensi dan pengembangan karier profesional
+      keperawatan.
+    </p>
+    <div class="hero-actions">
+      <a href="{{ url_for('logbook.index') }}" class="btn btn-primary"
+        >Buka Logbook <span></span></a
+      ><a href="{{ url_for('level.index') }}" class="btn btn-glass"
+        >Lihat Level</a
+      >
+    </div>
+    <div class="ecg-wrap" aria-hidden="true">
+      <svg viewBox="0 0 600 46" preserveAspectRatio="none">
+        <path
+          class="ecg-line"
+          d="M0,23 L18,23 Q25,15 32,23 L40,23 L44,26 L49,3 L54,41 L59,23 L72,23 Q90,11 108,23 L150,23 L168,23 Q175,15 182,23 L190,23 L194,26 L199,3 L204,41 L209,23 L222,23 Q240,11 258,23 L300,23 L318,23 Q325,15 332,23 L340,23 L344,26 L349,3 L354,41 L359,23 L372,23 Q390,11 408,23 L450,23 L468,23 Q475,15 482,23 L490,23 L494,26 L499,3 L504,41 L509,23 L522,23 Q540,11 558,23 L600,23 M600,23 L618,23 Q625,15 632,23 L640,23 L644,26 L649,3 L654,41 L659,23 L672,23 Q690,11 708,23 L750,23 L768,23 Q775,15 782,23 L790,23 L794,26 L799,3 L804,41 L809,23 L822,23 Q840,11 858,23 L900,23 L918,23 Q925,15 932,23 L940,23 L944,26 L949,3 L954,41 L959,23 L972,23 Q990,11 1008,23 L1050,23 L1068,23 Q1075,15 1082,23 L1090,23 L1094,26 L1099,3 L1104,41 L1109,23 L1122,23 Q1140,11 1158,23 L1200,23"
+        />
+      </svg>
+    </div>
+  </div>
+</div>
+
+{% if nurse.sip_status and nurse.sip_status.level != 'ok' or
+nurse.spk_rkk_status and nurse.spk_rkk_status.level != 'ok' %}
+<div class="card reveal document-alert-card">
+  <div class="card-header">
+    <div>
+      <span class="eyebrow">PERINGATAN</span>
+      <h2>Masa Berlaku Dokumen Anda</h2>
+    </div>
+  </div>
+  {% if nurse.sip_status and nurse.sip_status.level != 'ok' %}
+  <div
+    class="status-banner {{ 'danger' if nurse.sip_status.level in ('expired','critical') else 'warning' }}"
+  >
+    <div>
+      <strong
+        >SIP {{ 'SUDAH KEDALUWARSA' if nurse.sip_status.level == 'expired' else
+        'AKAN SEGERA KEDALUWARSA' }}</strong
+      >
+      <small
+        >{% if nurse.sip_status.level == 'expired' %}Sejak {{
+        nurse.sip_expiry.strftime('%d-%m-%Y') }}. Segera hubungi admin untuk
+        memperpanjang, akun dapat dinonaktifkan otomatis.{% else %}Berlaku
+        sampai {{ nurse.sip_expiry.strftime('%d-%m-%Y') }} (H-{{
+        nurse.sip_status.days_left }}). Segera ajukan perpanjangan.{% endif
+        %}</small
+      >
+    </div>
+  </div>
+  {% endif %} {% if nurse.spk_rkk_status and nurse.spk_rkk_status.level != 'ok'
+  %}
+  <div
+    class="status-banner {{ 'danger' if nurse.spk_rkk_status.level in ('expired','critical') else 'warning' }}"
+  >
+    <div>
+      <strong
+        >SPK/RKK {{ 'SUDAH KEDALUWARSA' if nurse.spk_rkk_status.level ==
+        'expired' else 'AKAN SEGERA KEDALUWARSA' }}</strong
+      >
+      <small
+        >{% if nurse.spk_rkk_status.level == 'expired' %}Sejak {{
+        nurse.spk_rkk_expiry.strftime('%d-%m-%Y') }}. Segera hubungi admin untuk
+        memperpanjang, akun dapat dinonaktifkan otomatis.{% else %}Berlaku
+        sampai {{ nurse.spk_rkk_expiry.strftime('%d-%m-%Y') }} (H-{{
+        nurse.spk_rkk_status.days_left }}). Segera ajukan perpanjangan.{% endif
+        %}</small
+      >
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+
+<div class="section-heading reveal">
+  <div>
+    <span class="eyebrow">RINGKASAN</span>
+    <h2>Perjalanan Karier</h2>
+  </div>
+  <span class="live-pill"><i></i> Aktif</span>
+</div>
+
+<div class="dashboard-grid">
+  <div class="card stat-card stat-navy reveal">
+    <div class="stat-icon">✦</div>
+    <span class="stat-label">Level Saat Ini</span
+    ><strong class="stat-value text-white"
+      >{{ nurse.level.nama_level if nurse.level else '-' }}</strong
+    ><small>Posisi karier Anda</small>
+  </div>
+  <div class="card stat-card stat-teal reveal">
+    <div class="stat-icon">✓</div>
+    <span class="stat-label">Kompetensi Selesai</span
+    ><strong class="stat-value" data-counter="{{ summary.selesai }}">0</strong
+    ><small>dari {{ summary.total }} keterampilan</small>
+  </div>
+  <div class="card stat-card stat-cyan reveal">
+    <div class="stat-icon">%</div>
+    <span class="stat-label">Progress Level</span
+    ><strong class="stat-value"
+      ><span data-counter-decimal="{{ summary.persen }}">0</span>%</strong
+    ><small>menuju level berikutnya</small>
+  </div>
+</div>
+
+<div class="dashboard-lower">
+  <div class="card progress-card progress-card-full reveal">
+    <div class="card-header">
+      <div>
+        <span class="eyebrow">CURRENT LEVEL</span>
+        <h2>{{ nurse.level.nama_level if nurse.level else '-' }}</h2>
+      </div>
+      <span class="level-chip">{{ summary.persen }}%</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-bar" data-progress="{{ summary.persen }}"></div>
+    </div>
+    <div class="progress-meta">
+      <span>{{ summary.selesai }} kompetensi selesai</span
+      ><strong>{{ summary.persen }}%</strong>
+    </div>
+    <div class="milestone">
+      <span class="milestone-dot done">✓</span><span>Level saat ini</span
+      ><span class="line"></span
+      ><span class="milestone-dot {% if summary.persen == 100 %}done{% endif %}"
+        >★</span
+      ><span>Level berikutnya</span>
+    </div>
+    {% if pending_request %}
+    <div class="status-banner warning">
+      <span>⏳</span>
+      <div>
+        <strong>Menunggu Review</strong
+        ><small>Pengajuan kenaikan level sedang diproses.</small>
+      </div>
+    </div>
+    {% elif summary.persen == 100 %}
+    <div class="status-banner success">
+      <span>✓</span>
+      <div>
+        <strong>Siap naik level!</strong
+        ><small>Semua keterampilan pada level ini telah selesai.</small>
+      </div>
+      <a href="{{ url_for('level.index') }}" class="btn btn-sm btn-success"
+        >Ajukan</a
+      >
+    </div>
+    {% else %}
+    <div class="status-banner info">
+      <span>⌁</span>
+      <div>
+        <strong>Terus berkembang</strong
+        ><small>Lengkapi logbook untuk membuka level berikutnya.</small>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endif %} {% else %}
+<div class="hero-panel compact reveal">
+  <div class="hero-copy">
+    <span class="eyebrow">ADMINISTRATION</span>
+    <h1>Dashboard {{ current_user.role|capitalize }}</h1>
+    <p>Pantau aktivitas perawat dan proses verifikasi dari satu tempat.</p>
+    <div class="ecg-wrap" aria-hidden="true">
+      <svg viewBox="0 0 600 46" preserveAspectRatio="none">
+        <path
+          class="ecg-line"
+          d="M0,23 L18,23 Q25,15 32,23 L40,23 L44,26 L49,3 L54,41 L59,23 L72,23 Q90,11 108,23 L150,23 L168,23 Q175,15 182,23 L190,23 L194,26 L199,3 L204,41 L209,23 L222,23 Q240,11 258,23 L300,23 L318,23 Q325,15 332,23 L340,23 L344,26 L349,3 L354,41 L359,23 L372,23 Q390,11 408,23 L450,23 L468,23 Q475,15 482,23 L490,23 L494,26 L499,3 L504,41 L509,23 L522,23 Q540,11 558,23 L600,23 M600,23 L618,23 Q625,15 632,23 L640,23 L644,26 L649,3 L654,41 L659,23 L672,23 Q690,11 708,23 L750,23 L768,23 Q775,15 782,23 L790,23 L794,26 L799,3 L804,41 L809,23 L822,23 Q840,11 858,23 L900,23 L918,23 Q925,15 932,23 L940,23 L944,26 L949,3 L954,41 L959,23 L972,23 Q990,11 1008,23 L1050,23 L1068,23 Q1075,15 1082,23 L1090,23 L1094,26 L1099,3 L1104,41 L1109,23 L1122,23 Q1140,11 1158,23 L1200,23"
+        />
+      </svg>
+    </div>
+  </div>
+</div>
+<div class="dashboard-grid admin-stats">
+  <div class="card stat-card stat-teal reveal">
+    <div class="stat-icon">{{ icon_users(22) }}</div>
+    <span class="stat-label">Total Perawat</span
+    ><strong class="stat-value" data-counter="{{ total_nurses }}">0</strong
+    ><small>akun terdaftar</small>
+  </div>
+  <div class="card stat-card stat-amber reveal">
+    <div class="stat-icon">{{ icon_clock(22) }}</div>
+    <span class="stat-label">Pengajuan Menunggu</span
+    ><strong class="stat-value" data-counter="{{ pending_requests }}">0</strong
+    ><small>perlu direview</small>
+  </div>
+  <div class="card stat-card stat-cyan reveal">
+    <div class="stat-icon">{{ icon_shield(22) }}</div>
+    <span class="stat-label">Verifikasi Logbook</span
+    ><strong class="stat-value" data-counter="{{ pending_verifikasi }}"
+      >0</strong
+    ><small>menunggu pemeriksaan</small>
+  </div>
+</div>
+{% if perlu_perhatian and (perlu_perhatian.expired or perlu_perhatian.critical
+or perlu_perhatian.warning) %}
+<div class="card reveal">
+  <div class="card-header">
+    <div>
+      <span class="eyebrow">PERINGATAN</span>
+      <h2>Masa Berlaku SIP / SPK-RKK</h2>
+    </div>
+  </div>
+  {% if perlu_perhatian.expired %}
+  <div class="status-banner danger">
+    <div>
+      <strong
+        >{{ perlu_perhatian.expired|length }} AKUN SUDAH KEDALUWARSA</strong
+      ><small
+        >Sistem otomatis menonaktifkan akun ini sampai tanggal SIP/SPK-RKK
+        diperbarui.</small
+      >
+    </div>
+    <a
+      href="{{ url_for('admin.daftar_perawat') }}"
+      class="btn btn-sm btn-danger"
+      >Lihat</a
+    >
+  </div>
+  {% endif %} {% if perlu_perhatian.critical %}
+  <div class="status-banner danger">
+    <div>
+      <strong
+        >{{ perlu_perhatian.critical|length }} AKUN KEDALUWARSA DALAM ≤30
+        HARI</strong
+      ><small>Segera proses perpanjangan.</small>
+    </div>
+    <a
+      href="{{ url_for('admin.daftar_perawat') }}"
+      class="btn btn-sm btn-danger"
+      >Lihat</a
+    >
+  </div>
+  {% endif %} {% if perlu_perhatian.warning %}
+  <div class="status-banner warning">
+    <div>
+      <strong
+        >{{ perlu_perhatian.warning|length }} akun kedaluwarsa dalam ≤90
+        hari</strong
+      ><small>Mulai ajukan perpanjangan.</small>
+    </div>
+    <a
+      href="{{ url_for('admin.daftar_perawat') }}"
+      class="btn btn-sm btn-warning"
+      >Lihat</a
+    >
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+
+<div class="card reveal admin-note">
+  <span class="eyebrow">QUICK TIP</span>
+  <h2>Jaga alur verifikasi tetap rapi</h2>
+  <p>
+    Periksa pencapaian logbook terlebih dahulu, lalu review pengajuan level
+    setelah progress perawat memenuhi persyaratan.
+  </p>
+</div>
+
+<div class="card reveal password-card">
+  <div class="card-header">
+    <div>
+      <span class="eyebrow"> AKUN</span>
+      <h2>Ubah Password</h2>
+      <p class="text-muted">Minimal 8 karakter.</p>
+    </div>
+  </div>
+  <form method="POST" action="{{ url_for('auth.change_password') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="grid-2">
+      <div class="form-group">
+        <label>Password Lama</label>
+        <div class="password-field">
+          <input
+            type="password"
+            name="old_password"
+            required
+            autocomplete="current-password"
+          />
+          <button
+            type="button"
+            class="toggle-password"
+            aria-label="Tampilkan password"
+          >
+            <svg
+              class="icon-eye"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+            <svg
+              class="icon-eye-off"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a21.86 21.86 0 0 1 5.06-5.94M9.9 4.24A10.4 10.4 0 0 1 12 4c7 0 11 7 11 7a21.86 21.86 0 0 1-3.22 4.36M14.12 14.12a3 3 0 1 1-4.24-4.24"
+              />
+              <path d="M1 1l22 22" />
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Password Baru</label>
+        <div class="password-field">
+          <input
+            type="password"
+            name="new_password"
+            minlength="8"
+            required
+            autocomplete="new-password"
+          />
+          <button
+            type="button"
+            class="toggle-password"
+            aria-label="Tampilkan password"
+          >
+            <svg
+              class="icon-eye"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+            <svg
+              class="icon-eye-off"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a21.86 21.86 0 0 1 5.06-5.94M9.9 4.24A10.4 10.4 0 0 1 12 4c7 0 11 7 11 7a21.86 21.86 0 0 1-3.22 4.36M14.12 14.12a3 3 0 1 1-4.24-4.24"
+              />
+              <path d="M1 1l22 22" />
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Konfirmasi Password Baru</label>
+        <div class="password-field">
+          <input
+            type="password"
+            name="confirm_password"
+            minlength="8"
+            required
+            autocomplete="new-password"
+          />
+          <button
+            type="button"
+            class="toggle-password"
+            aria-label="Tampilkan password"
+          >
+            <svg
+              class="icon-eye"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+            <svg
+              class="icon-eye-off"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a21.86 21.86 0 0 1 5.06-5.94M9.9 4.24A10.4 10.4 0 0 1 12 4c7 0 11 7 11 7a21.86 21.86 0 0 1-3.22 4.36M14.12 14.12a3 3 0 1 1-4.24-4.24"
+              />
+              <path d="M1 1l22 22" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+    <button type="submit" class="btn btn-primary">Ubah Password</button>
+  </form>
+</div>
+{% endif %} {% endblock %}

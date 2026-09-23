@@ -1,0 +1,28 @@
+# Contoh konfigurasi Nginx sebagai reverse proxy di depan Gunicorn.
+# Simpan ke /etc/nginx/sites-available/eka-hospital-logbook lalu:
+#   sudo ln -s /etc/nginx/sites-available/eka-hospital-logbook /etc/nginx/sites-enabled/
+#   sudo nginx -t && sudo systemctl reload nginx
+
+server {
+    listen 80;
+    server_name logbook.rumahsakit.internal;  # ganti sesuai domain/IP internal
+
+    client_max_body_size 6M;  # sedikit di atas MAX_CONTENT_LENGTH (5MB) di config.py
+
+    location /static/ {
+        alias /opt/eka-hospital-logbook/static/;
+        expires 7d;
+    }
+
+    location / {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+
+# Kalau nanti sudah pasang SSL (Let's Encrypt / sertifikat internal RS),
+# tambahkan server block listen 443 ssl dan redirect port 80 -> 443, lalu
+# set FORCE_HTTPS=1 di .env agar cookie sesi dikunci ke koneksi HTTPS.
